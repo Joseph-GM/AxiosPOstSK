@@ -21,28 +21,80 @@ import {
 import axios from 'axios'
 
 function App() {
-  const SK_API_KEY = "SK_API_KEY"
-  const URLRoute = "https://apis.openapi.sk.com/tmap/routes?version=1&format=json&callback=result"
-  const URLAddress = "https://apis.openapi.sk.com/tmap/geo/reversegeocoding"
+  const SK_API_KEY = "SK_API_KEY";
+  const URLRoute = "https://apis.openapi.sk.com/tmap/routes?version=1&format=json&callback=result";
+  const URLPoi = "https://apis.openapi.sk.com/tmap/pois";
+  const URLAddress = "https://apis.openapi.sk.com/tmap/geo/reversegeocoding";
   
   const [routeData, setRouteData] = useState({});
   const [address, setAddress] = useState({});
-  
+  const [csData, setCSData] = useState([]);
+  const [csPoint, setCSPoint] = useState([]);
+  const startLat = 37.508194;
+  const startLon = 126.709094;
+  const endLat = 37.517119;
+  const endLon = 126.739392 
   
   const getRoute = () => {
       axios.get(URLRoute, {
        params: {
         appKey : SK_API_KEY,
-        startX : '126.9131113',
-        startY : '37.5702936',
-        endX : '126.9178121',
-        endY : '37.5748750',
+        startX : startLon.toString(),
+        startY : startLat.toString(),
+        endX : endLon.toString(),
+        endY : endLat.toString(),
        }, 
      })
-    .then(response => console.log(JSON.stringify(response.data)))
+    .then(response => {
+      var route = [];
+      var csGetPoint = [[startLon, startLat]]
+      var count = 1.0;
+      var totalDist = 0.0;
+      var allArr = response.data.features;
+      var length = allArr.length;
+      for (var i = 0; i < length ; i++) {
+        if (allArr[i].geometry.type == "LineString") {
+          var cordi = allArr[i].geometry.coordinates;
+          route.push(...cordi);
+          var totalDist = totalDist + Number(allArr[i].properties.distance)
+          if (totalDist > count*1000.0) {
+            pointLength = cordi.length-1;
+            csGetPoint.push(cordi[pointLength])
+            count = count+1;
+          }
+        }
+      };
+      setRouteData(route);
+      csGetPoint.push([endLon, endLat]);
+      for (var i = 0 ; i < csGetPoint.length; i++) {
+        var tempArr = csGetPoint[i];
+        console.log(tempArr[1])
+      }
+      setCSPoint(csGetPoint);
+      console.log("Total dist = ", totalDist);
+    })
     .catch(errors => {console.log(errors)}) 
 
 }
+
+/*const getCSData = async ({csGetPoint}) => {
+  const response = [];
+
+  for (var i = 0; i < csGetPoint; i++) {
+    response.push(await axios.get(URLPoi, {
+      params: {
+        version: 1,
+        count: 1,
+        searchKeyword: "전기차충전소",
+        centerLat: csGetPoint[i][1].toString(),
+        centerLon: csGetPoint[i][0].toString(),
+        appKey: SK_API_KEY,
+      }
+    }))
+  };
+
+} */
+
 
 const getAddress = () => {
   axios
@@ -74,7 +126,8 @@ useEffect ( () => {
 }, [])
   return (
     <View>
-      <Text>Test App</Text>
+        { console.log(csPoint)}
+        <Text>Test App</Text>
     </View>
   );
 };
