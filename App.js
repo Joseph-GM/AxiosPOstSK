@@ -36,7 +36,8 @@ function App() {
   const endLon = 126.739392 
   
   const getRoute = () => {
-      axios.get(URLRoute, {
+    var csTempData = [];  
+    axios.get(URLRoute, {
        params: {
         appKey : SK_API_KEY,
         startX : startLon.toString(),
@@ -52,6 +53,7 @@ function App() {
       var totalDist = 0.0;
       var allArr = response.data.features;
       var length = allArr.length;
+      
       for (var i = 0; i < length ; i++) {
         if (allArr[i].geometry.type == "LineString") {
           var cordi = allArr[i].geometry.coordinates;
@@ -64,36 +66,39 @@ function App() {
           }
         }
       };
+
       setRouteData(route);
       csGetPoint.push([endLon, endLat]);
-      for (var i = 0 ; i < csGetPoint.length; i++) {
-        var tempArr = csGetPoint[i];
-        console.log(tempArr[1])
-      }
-      setCSPoint(csGetPoint);
+      console.log("csGetPoint", csGetPoint)
+      getCSData(csGetPoint);
       console.log("Total dist = ", totalDist);
     })
     .catch(errors => {console.log(errors)}) 
-
 }
 
-/*const getCSData = async ({csGetPoint}) => {
-  const response = [];
-
-  for (var i = 0; i < csGetPoint; i++) {
-    response.push(await axios.get(URLPoi, {
+getCSData = async(csGetPoint) => {
+  response = [];
+  console.log("In getCSDATA", csGetPoint);
+  for (var i = 0; i < csGetPoint.length; i++) {
+    await axios.get(URLPoi, {
       params: {
         version: 1,
-        count: 1,
-        searchKeyword: "전기차충전소",
+        count: 2,
+        searchKeyword: "EV충전소",
         centerLat: csGetPoint[i][1].toString(),
         centerLon: csGetPoint[i][0].toString(),
         appKey: SK_API_KEY,
       }
-    }))
+    })
+    .then(
+      resp => {
+        response.push(...resp.data.searchPoiInfo.pois.poi)
+      }
+      )
   };
+  setCSData(response);
 
-} */
+}
 
 
 const getAddress = () => {
@@ -126,7 +131,7 @@ useEffect ( () => {
 }, [])
   return (
     <View>
-        { console.log(csPoint)}
+        {console.log("In render", csData)}
         <Text>Test App</Text>
     </View>
   );
