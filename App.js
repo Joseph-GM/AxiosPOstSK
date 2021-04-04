@@ -26,7 +26,7 @@ function App() {
   const URLPoi = "https://apis.openapi.sk.com/tmap/pois";
   const URLAddress = "https://apis.openapi.sk.com/tmap/geo/reversegeocoding";
   
-  const [routeData, setRouteData] = useState({});
+  const [routeData, setRouteData] = useState([]);
   const [address, setAddress] = useState({});
   const [csData, setCSData] = useState([]);
   const [csPoint, setCSPoint] = useState([]);
@@ -131,7 +131,7 @@ useEffect ( () => {
 }, [])
   return (
     <View>
-        {console.log("In render", csData)}
+        {console.log("In render", routeData)}
         <Text>Test App</Text>
     </View>
   );
